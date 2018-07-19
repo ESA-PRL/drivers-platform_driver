@@ -175,10 +175,9 @@ Platform_Driver::~Platform_Driver()
 
     if (rc)
     {
-    	std::cout << "Platform_Driver::~Platform_Driver: ERROR in thread joining. Return code is " << rc << std::endl;
-    	exit(-1);
+        std::cout << "Platform_Driver::~Platform_Driver: ERROR in thread joining. Return code is " << rc << " and status is " << (long)status << std::endl;
+        exit(-1);
     }
-    std::cout << "Platform_Driver::~Platform_Driver: Completed thread joining. Return code is " << rc << " and status is " << (long)status << std::endl;
 
 	if (m_pCanCtrl != NULL)
 	{
@@ -192,8 +191,6 @@ Platform_Driver::~Platform_Driver()
 			delete m_vpMotor[i];
 		}
 	}	
-    
-	std::cout << "Platform_Driver::~Platform_Driver: exiting the destructor... " << std::endl;
 }
 
 void Platform_Driver::configureTimer()
