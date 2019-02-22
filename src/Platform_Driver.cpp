@@ -635,12 +635,14 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 	{
 		m_vpMotor[i]->reset();
 	}
-    /* Not necessary in HDPR because there is no AUTOEXEC code in the Whistles that needs time
-	usleep(10000000); //!Wait for the AUTOEXEC script in the Whistles to finish
-	*/
+	usleep(5000000); //!Wait for the AUTOEXEC script in the Whistles to finish
+
+	//* Start timer for sending periodic SYNC messages, watchdog error detection and error control
+	configureTimer();
+	usleep(500000);
 
 	//* Initialize and start all motors
-	for (int i = 0; i<m_iNumMotors; i++)
+	for (int i = 0; i < m_iNumMotors; i++)
 	{
 		if (!m_vpMotor[i]->init())
 		{
@@ -662,48 +664,35 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 		std::cout << "Motor "<< m_vCanNodeIDs.Name[i] << " started" << std::endl;
 	}
 
-	//* Start timer for sending periodic SYNC messages, watchdog error detection and error control
-	configureTimer();
-
 	if (!startWatchdog(m_bWatchdogActive))
 	{
 		std::cout << "Starting watchdog failed" << std::endl;
 		return false;
 	}
 
-	/*
-	 * Home all non driving motors. Using group IDs for efficiency.
-	 */
-
-	for (int i = 0; i<m_iNumNodes; i++)
+	for (int i = 0; i < m_iNumMotors; i++)
 	{
 		if (m_vpMotor[i]->getDriveParam()->getIsSteer())
 			((CanDriveWhistle*)m_vpMotor[i])->Homing();
-		else
-			((CanDriveWhistle*)m_vpMotor[i])->setTypeMotionVariable(CanDriveItf::MOTIONTYPE_VELCTRL);
 	}
 
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_STEER_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_WALK_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_MANIP_JOINT_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_MAST_PTU_GROUP])->Homing();
-	usleep(2000000);
+	usleep(5000000);
 
 
 	//* check correct homing achieved
 	while(!bHomingOk)
-	{
-		bHomingOk=true;
-		for (int i=0; i<m_iNumMotors; i++)
-		{
-			if (m_vCanNodeIDs.Type[i] != WHEEL_DRIVE)
-			{
-                		if (can_params.Active[i]){
-                    			bHomingOk &= m_vpMotor[i]->checkTargetReached();
-                		}
-			}
-		}
-	}
+    {
+        bHomingOk=true;
+        for (int i=0; i<m_iNumMotors; i++)
+        {
+            if (m_vpMotor[i]->getDriveParam()->getIsSteer())
+            {
+                if (can_params.Active[i]){
+                    bHomingOk &= m_vpMotor[i]->checkTargetReached();
+                }
+            }
+        }
+    }
 	std::cout << "Homing motors finished with status: " << bHomingOk << std::endl;
 	return (bHomingOk);
 }
@@ -760,7 +749,7 @@ bool Platform_Driver::resetPltf()
 	{
 		m_vpMotor[i]->reset();
 	}
-	usleep(10000000); //!Wait for the AUTOEXEC script in the Whistles to finish
+	usleep(5000000); //!Wait for the AUTOEXEC script in the Whistles to finish
 
 	for(int i = 0; i < m_iNumMotors; i++)
 	{
@@ -784,7 +773,7 @@ bool Platform_Driver::resetNode(int iCanIdent)
 {
 	bool bRet = true;
 	m_vpMotor[iCanIdent]->reset();
-	usleep(2000000); //! Wait for the AUTOEXEC script in the Whistle to finish
+	usleep(5000000); //! Wait for the AUTOEXEC script in the Whistle to finish
 	bRet = m_vpMotor[iCanIdent]->init();
 	if (bRet)
 	{
@@ -1218,6 +1207,7 @@ void Platform_Driver::nodeTorqueCommandNm(int iCanIdent, double dTorqueNm)
     if (m_vpMotor[iCanIdent]->getTypeMotionVariable() != CanDriveItf::MOTIONTYPE_TORQUECTRL)
         m_vpMotor[iCanIdent]->setTypeMotion(CanDriveItf::MOTIONTYPE_TORQUECTRL);
 
+    std::cout << "Trying to send Torque Command " << iCanIdent << " " << dTorqueNm << std::endl;
 	m_vpMotor[iCanIdent]->torqueCommandNm(dTorqueNm);
 
 }
@@ -1363,7 +1353,7 @@ void timer_handler (int signum)
 		sendHeartbeat();
 	}
 
-	for (size_t i=0;i<m_vpMotor.size();i++)
+	for (size_t i=0; i < m_vpMotor.size(); i++)
 	{
 		((CanDriveWhistle*)m_vpMotor[i])->requestStatus();
 	}
@@ -1409,8 +1399,6 @@ void requestSystemInfo()
 	//m_vpMotor[CANNODE_WHEEL_DRIVE_GROUP]->IntprtSetInt(4, 'A', 'N', 1, 0);
 	//m_vpMotor[CANNODE_WHEEL_DRIVE_GROUP]->IntprtSetInt(4, 'I', 'Q', 0, 0);
 	//m_vpMotor[CANNODE_WHEEL_DRIVE_GROUP]->IntprtSetInt(4, 'C', 'L', 1, 0);
-
-
 }
 
 void sendSync()

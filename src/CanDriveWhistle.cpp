@@ -363,8 +363,9 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
 
 	if (isBitSet(msg.getAt(3),6))
 	{
-		std::cout << "CanDriveWhistle::evalReceivedMsg : Received error answer from binary interpreter in motor " << m_sName << " Command sent was: " << msg.getAt(0) << msg.getAt(1) << std::endl;
-		// error_handling();
+		std::cerr << "CanDriveWhistle::evalReceivedMsg : Received error answer from binary interpreter in motor " << m_sName << " Command sent was: " << msg.getAt(0) << msg.getAt(1) << " ";
+        std::cerr << "Returns Error Code: " << msg.getAt(4) << " " << std::endl;
+        requestStatus();
 	}
 
 	else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'X') ) //* current pos
@@ -1408,18 +1409,26 @@ bool CanDriveWhistle::evalStatusRegister(int iStatus)
 		//* Check Motor is ON
 		if(isBitSet(iStatus, 4))
 		{
+            //if (m_sName == "WHEEL_WALK_BR")
+            //    std::cout << "Motor " << m_sName << " ON" << std::endl;
+
 			if (m_iMotorState != ST_OPERATION_ENABLED)
 			{
 				//std::cout << "Motor " << m_sName << " operation enabled" << std::endl;
 			}
+            m_bMotorOn = true;
 			m_iNewMotorState = ST_OPERATION_ENABLED;
 		}
 		else
 		{
+            if (m_sName == "WHEEL_WALK_BR")
+                std::cout << "Motor " << m_sName << " OFF" << std::endl;
+
 			if (m_iMotorState != ST_OPERATION_DISABLED)
 			{
 				//std::cout << "Motor " << m_sName << " operation disabled" << std::endl;
 			}
+            m_bMotorOn = false;
 			m_iNewMotorState = ST_OPERATION_DISABLED;
 		}
 
@@ -1435,6 +1444,20 @@ bool CanDriveWhistle::evalStatusRegister(int iStatus)
 		else
 			m_bCurrentLimitOn = false;
 	}
+
+    int status = (isBitSet(iStatus, 7) << 2) |
+        (isBitSet(iStatus, 8) << 1) |
+        isBitSet(iStatus, 9);
+
+    switch (status)
+    {
+        case 5: m_iTypeMotion = MOTIONTYPE_POSCTRL; break;
+        case 2: m_iTypeMotion = MOTIONTYPE_VELCTRL; break;
+        case 1: m_iTypeMotion = MOTIONTYPE_TORQUECTRL; break;
+        case 4: m_iTypeMotion = MOTIONTYPE_POSCTRL_4; break;
+        //default: std::cout << "Motion type of " << m_sName << " is " << status << std::endl; break;
+        default: break;
+    }
 
 	//* Update state
 	m_iMotorState = m_iNewMotorState;
@@ -1545,7 +1568,7 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
 
 	if (m_bMotorOn)
 	{
-                motor_on=true;
+        motor_on=true;
 		//* switch off Motor to change Unit-Mode
 		IntprtSetInt(8, 'M', 'O', 0, 0);
 
@@ -1616,9 +1639,9 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
 #endif
 	}
 	
-	//usleep(100000);
-	m_iTypeMotion = iType;
-        
+	usleep(100000);
+	//m_iTypeMotion = iType;
+
         if (motor_on)
 	{
                 //* switch Motor back ON (as it was before entering the function)
@@ -1664,6 +1687,15 @@ void CanDriveWhistle::IntprtSetInt(int iDataLen, char cCmdChar1, char cCmdChar2,
 
 	CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1], cInt[0], cInt[1], cInt[2], cInt[3]);
 	m_pCanCtrl->transmitMsg(CMsgTr);
+
+    if (m_ParamCanOpen.iCanID == 12 && !(cCmdChar1 == 'S' && cCmdChar2 == 'R'))
+    {
+        std::cout << "IntprtSetInt Single: " << cCmdChar1 << cCmdChar2 << " " << iIndex << " " << iData << std::endl;
+    }
+    //if (m_ParamCanOpen.iCanID == 33)
+    //{
+    //    std::cout << "IntprtSetInt Group:  " << cCmdChar1 << cCmdChar2 << " " << iIndex << " " << iData << std::endl;
+    //}
 }
 
 //-----------------------------------------------
