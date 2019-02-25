@@ -363,7 +363,7 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
 
 	if (isBitSet(msg.getAt(3),6))
 	{
-		std::cerr << "CanDriveWhistle::evalReceivedMsg : Received error answer from binary interpreter in motor " << m_sName << " Command sent was: " << msg.getAt(0) << msg.getAt(1) << " ";
+		std::cerr << "CanDriveWhistle::evalReceivedMsg : Received error answer from binary interpreter in motor " << m_sName << " Command sent was: " << static_cast<char>(msg.getAt(0)) << static_cast<char>(msg.getAt(1)) << " ";
         std::cerr << "Returns Error Code: " << msg.getAt(4) << " " << std::endl;
         requestStatus();
 	}
