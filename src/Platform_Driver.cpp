@@ -87,6 +87,8 @@
 #include "CanDriveItf.h"
 #include "Platform_Driver.h"
 
+#include "base-logging/Logging.hpp"
+
 const double PI = 4*atan(1.0);								/**< PI constant variable */
 
 //* The following variables are defined outside the class because they are used by the Thread and Timer handler methods.
@@ -163,7 +165,7 @@ Platform_Driver::~Platform_Driver()
 	void *status;
 	m_bExit=true;
 
-        struct itimerval timer;
+    struct itimerval timer;
 	timer.it_interval.tv_sec = 0;
   	timer.it_interval.tv_usec = 0;
   	timer.it_value.tv_sec = 0;
@@ -175,7 +177,7 @@ Platform_Driver::~Platform_Driver()
 
     if (rc)
     {
-        std::cout << "Platform_Driver::~Platform_Driver: ERROR in thread joining. Return code is " << rc << " and status is " << (long)status << std::endl;
+        LOG_ERROR_S << "~Platform_Driver: ERROR in thread joining. Return code is " << rc << " and status is " << (long)status;
         exit(-1);
     }
 
@@ -213,11 +215,11 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	if (m_iCanItfType == CanItf::CAN_PEAK_USB)
 	{
 		m_pCanCtrl = new CANPeakSysUSB(can_address);
-		std::cout << "Uses CAN-Peak-USB" << std::endl;
+		LOG_DEBUG_S << "Uses CAN-Peak-USB";
 	}
 	else
 	{
-		std::cout << "Wrong or unknown Type of CAN interface" << std::endl;
+		LOG_WARN_S << "Wrong or unknown Type of CAN interface";
 		return false;
 	}
 
@@ -434,7 +436,7 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 
 	if (static_cast<unsigned int>(m_iNumNodes) != m_vCanNodeIDs.CanId.size())
 	{
-		std::cout << "Platform_Driver::ReadConfigutation: The number of motors does not match the size of CAN Node IDs array" <<std::endl;
+		LOG_ERROR_S << "ReadConfigutation: The number of motors does not match the size of CAN Node IDs array";
 		m_bExit=true;
 		return false;
 	}
@@ -576,7 +578,7 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 		}
 		else
 		{
-			std::cout << "Platform_Driver::ReadConfigutation: Unknown type "<< m_vCanNodeIDs.Type[i] <<" of motor "<< m_vCanNodeIDs.Name[i] <<std::endl;
+			LOG_ERROR_S << "ReadConfigutation: Unknown type "<< m_vCanNodeIDs.Type[i] <<" of motor "<< m_vCanNodeIDs.Name[i];
 			return false;
 		}
 
@@ -603,7 +605,7 @@ int Platform_Driver::evalCanBuffer()
 		}
 		if (bRet == false)
 		{
-			std::cout << "evalCanBuffer(): Received CAN_Message with unknown identifier " << m_CanMsgRec.getID() << std::endl;
+			LOG_WARN_S << "evalCanBuffer(): Received CAN_Message with unknown identifier " << m_CanMsgRec.getID();
 		}		
 	};
 
@@ -618,7 +620,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 	//* Platform configuration. CAN interface and CAN nodes setup.
 	if(!readConfiguration(wheel_drive, steer_drive, walk_drive, pan_drive, tilt_drive, arm_joint, can_params))
 	{
-		std::cout << "Platform_Driver::initPltf: ERROR in readConfiguration call. Check CAN interface " << std::endl;
+		LOG_ERROR_S << "initPltf: ERROR in readConfiguration call. Check CAN interface ";
 		return false;
 	}
 
@@ -627,7 +629,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 
 	if (rc)
 	{
-		std::cout << "Platform_Driver::initPltf: ERROR while creating the message handler thread. Return code is " << rc << std::endl;
+		LOG_ERROR_S << "initPltf: ERROR while creating the message handler thread. Return code is " << rc;
 		return false;
 	}
 	
@@ -646,7 +648,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 	{
 		if (!m_vpMotor[i]->init())
 		{
-			std::cout << "Initialization of Whistle " << m_vCanNodeIDs.Name[i] << " failed" << std::endl;
+			LOG_WARN_S << "Initialization of Whistle " << m_vCanNodeIDs.Name[i] << " failed";
 			return false;
 		}
 		usleep(10000);
@@ -655,18 +657,18 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 		{
 			if (!m_vpMotor[i]->start())
 			{
-				std::cout << "Starting Whistle " << m_vCanNodeIDs.Name[i] << " failed" << std::endl;
+				LOG_WARN_S << "Starting Whistle " << m_vCanNodeIDs.Name[i] << " failed";
 				return false;
 			}
 			usleep(10000);
 		}
 
-		std::cout << "Motor "<< m_vCanNodeIDs.Name[i] << " started" << std::endl;
+		LOG_INFO_S << "Motor "<< m_vCanNodeIDs.Name[i] << " started";
 	}
 
 	if (!startWatchdog(m_bWatchdogActive))
 	{
-		std::cout << "Starting watchdog failed" << std::endl;
+		LOG_ERROR_S << "Starting watchdog failed";
 		return false;
 	}
 
@@ -693,7 +695,16 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
             }
         }
     }
-	std::cout << "Homing motors finished with status: " << bHomingOk << std::endl;
+
+    if (bHomingOk)
+    {
+        LOG_INFO_S << "Homing motors finished";
+    }
+    else
+    {
+        LOG_ERROR_S << "Homing motors failed";
+    }
+
 	return (bHomingOk);
 }
 
@@ -760,7 +771,7 @@ bool Platform_Driver::resetPltf()
 		}
 		else
 		{
-			std::cout << "Resetting of Motor " << m_vCanNodeIDs.Name[i] << " failed" << std::endl;
+			LOG_ERROR_S << "Resetting of Motor " << m_vCanNodeIDs.Name[i] << " failed";
 		}
 
 		bRet &= bRetMotor;
@@ -781,7 +792,7 @@ bool Platform_Driver::resetNode(int iCanIdent)
 	}
 	else
 	{
-		std::cout << "Resetting of Motor " << m_vCanNodeIDs.Name[iCanIdent] << " failed" << std::endl;
+		LOG_ERROR_S << "Resetting of Motor " << m_vCanNodeIDs.Name[iCanIdent] << " failed";
 	}
 
 	return bRet;
@@ -792,17 +803,17 @@ bool Platform_Driver::startWatchdog(bool bStart)
 {
 
 	bool bRet = true;
-	std::cout << "Configuration of Watchdogs..." << std::endl;
+	LOG_DEBUG_S << "Configuration of Watchdogs...";
 	for(int i = 0; i < m_iNumMotors; i++)
 	{
 		if (!(m_vpMotor[i]->startWatchdog(bStart)))
 		{
-			std::cout << "Error initializing watchdog of motor " << m_vCanNodeIDs.Name[i] << std::endl;
+			LOG_ERROR_S << "Error initializing watchdog of motor " << m_vCanNodeIDs.Name[i];
 			bRet = false;
 		}
 	}
 	usleep(100000);
-	std::cout << "...done" << std::endl;
+	LOG_DEBUG_S << "...done";
 	return (bRet);
 }
 
@@ -1207,7 +1218,7 @@ void Platform_Driver::nodeTorqueCommandNm(int iCanIdent, double dTorqueNm)
     if (m_vpMotor[iCanIdent]->getTypeMotionVariable() != CanDriveItf::MOTIONTYPE_TORQUECTRL)
         m_vpMotor[iCanIdent]->setTypeMotion(CanDriveItf::MOTIONTYPE_TORQUECTRL);
 
-    std::cout << "Trying to send Torque Command " << iCanIdent << " " << dTorqueNm << std::endl;
+    LOG_DEBUG_S << "Trying to send Torque Command " << iCanIdent << " " << dTorqueNm;
 	m_vpMotor[iCanIdent]->torqueCommandNm(dTorqueNm);
 
 }
@@ -1316,7 +1327,7 @@ void* msg_handler(void *args)
 				}
 				else
 				{
-					std::cout << "message_handler: Received CAN_Message with unknown identifier " << CanMsg.getID() << std::endl;
+					LOG_WARN_S << "message_handler: Received CAN_Message with unknown identifier " << CanMsg.getID();
 				}
 			}
 		}

@@ -410,7 +410,7 @@ public:
 	 * Dummy implementation for completing CanDriveItf.
 	 */
 	bool setEMStop() {
-		std::cout << "The function setEMStop() is not implemented!!!" << std::endl;
+        std::cerr << "The function setEMStop() is not implemented!!!" << std::endl;
 		return false;
 	}
 
@@ -418,7 +418,7 @@ public:
 	 * Dummy implementation for completing CanDriveItf.
 	 */
 	bool resetEMStop() {
-		std::cout << "The function resetEMStop() is not implemented!!!" << std::endl;
+        std::cerr << "The function resetEMStop() is not implemented!!!" << std::endl;
 		return false;
 	}
 
