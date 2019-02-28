@@ -219,7 +219,7 @@ public:
 	 */
 	bool stop();
 	/**
-	 * Resets the drive.
+	 * Resets the drive with an NMT command.
 	 * The drive changes into the state after initialization.
 	 * @return True if re-initialization was successful. False otherwise.
 	 */
@@ -261,9 +261,10 @@ public:
 	 * Performs homing procedure for ExoTer rover System HW configuration
 	 * Homing method for ExoTer is simple: Absolute potentiometer sensor is used at initial stage to set the position value.
 	 * As from initialization, incremental encoder is used to measure the position relative to the initially set value.
+     * This simple procedure is possible thanks to the the absolute position initialization by means of the potentiometer.
 	 * Assuming a good absolute calibration of the potentiometer, this function just commands the motor to the neutral "zero" position.
 	 */
-	void Homing();
+	void homing();
 
 	/**
 	 * @return The elapsed time since the last received message.
