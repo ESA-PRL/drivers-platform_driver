@@ -79,7 +79,6 @@
 
 
 //* include files ---------------------------------------------
-
 #include "CanDriveItf.h"
 #include "TimeStamp.h"
 

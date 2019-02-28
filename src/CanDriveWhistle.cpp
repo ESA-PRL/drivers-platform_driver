@@ -73,8 +73,9 @@
  *
  ****************************************************************/
 
+#include <base-logging/Logging.hpp>
+
 #include "CanDriveWhistle.h"
-#include "base-logging/Logging.hpp"
 
 CanDriveWhistle::CanDriveWhistle()
 {

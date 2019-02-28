@@ -80,7 +80,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "base-logging/Logging.hpp"
+#include <base-logging/Logging.hpp>
 
 CANPeakSysUSB::CANPeakSysUSB()
 {

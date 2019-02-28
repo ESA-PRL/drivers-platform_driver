@@ -81,13 +81,12 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <cstdlib>
+#include <base-logging/Logging.hpp>
 
 //* Headers provided by other packages inside the library
 #include "CanPeakSysUSB.h"
 #include "CanDriveItf.h"
 #include "Platform_Driver.h"
-
-#include "base-logging/Logging.hpp"
 
 const double PI = 4*atan(1.0);                              /**< PI constant variable */
 
