@@ -22,7 +22,7 @@
  *
  * Copyright (c) 2010
  *
- * Fraunhofer Institute for Manufacturing Engineering	
+ * Fraunhofer Institute for Manufacturing Engineering
  * and Automation (IPA)
  *
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -31,9 +31,9 @@
  * ROS stack name: cob_driver
  * ROS package name: cob_canopen_motor
  * Description:
- *								
+ *
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- *			
+ *
  * Author: Christian Connette, email:christian.connette@ipa.fhg.de
  * Supervised by: Christian Connette, email:christian.connette@ipa.fhg.de
  *
@@ -52,23 +52,23 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing
  *	   Engineering and Automation (IPA) nor the names of its
  *	   contributors may be used to endorse or promote products derived from
  *	   this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License LGPL as 
- * published by the Free Software Foundation, either version 3 of the 
+ * it under the terms of the GNU Lesser General Public License LGPL as
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License LGPL for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public 
- * License LGPL along with this program. 
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License LGPL along with this program.
  * If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************/
@@ -94,7 +94,7 @@ CanDriveWhistle::CanDriveWhistle()
 	m_StartTime.SetNow();
 	m_VelCalcTime.SetNow();
 	m_CurrentTime.SetNow();
-	
+
 	m_dPosGearMeasRad = 0;
 	m_dPosGearMemoRad  = 0;
 	m_dVelGearMeasRadS = 0;
@@ -369,6 +369,13 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
 
 	else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'X') ) //* current pos
 	{
+		
+		m_iPosGearMeasEnc = msg.getAt(4)+(msg.getAt(5)<< 8)+(msg.getAt(6)<< 16)+(msg.getAt(7)<< 24);
+
+	}
+	else if( (msg.getAt(0) == 'U') && (msg.getAt(1) == 'I') ) //* saved pos
+	{
+		m_iPosGearSavedEnc = msg.getAt(4)+(msg.getAt(5)<< 8)+(msg.getAt(6)<< 16)+(msg.getAt(7)<< 24);
 	}
 
 	else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'A') ) //* position absolute
@@ -398,13 +405,13 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
 	else if( (msg.getAt(0) == 'I') && (msg.getAt(1) == 'P') ) //* digital in
 	{
 		//* Digital inputs are not used in ExoTer rover
-		iDigIn = 0x1FFFFF & ( (msg.getAt(7) << 24) | (msg.getAt(6) << 16)
+		/*iDigIn = 0x1FFFFF & ( (msg.getAt(7) << 24) | (msg.getAt(6) << 16)
 			| (msg.getAt(5) << 8) | (msg.getAt(4)) );
 
 		if( (iDigIn & iHomeDigIn) != 0x0000 )
 		{
 			m_bLimSwRight = true;
-		}
+		}*/
 	}
 
 	else if( (msg.getAt(0) == 'S') && (msg.getAt(1) == 'R') ) //* status
@@ -473,11 +480,11 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
 		//* ExoTer does not use Homing methods with Limit Switches
 
 		// homing status message (homing armed = 1 / disarmed = 0) is encoded in 5th byte
-		if(msg.getAt(4) == 0)
+		/*if(msg.getAt(4) == 0)
 		{
 			// if 0 received: elmo disarmed homing after receiving the defined event
 			m_bLimSwRight = true;
-		}
+		}*/
 	}
 	else if( (msg.getAt(0) == 'I') && (msg.getAt(1) == 'Q') ) // Active current
 	{
@@ -640,19 +647,19 @@ void CanDriveWhistle::setPDOmappings()
 	// Mapping of TPDO1:
 	// - position
 	// - velocity
-	
+
 	// stop all emissions of TPDO1
 	sendSDODownload(0x1A00, 0, 0);
-	
+
 	// position 4 byte of TPDO1
 	sendSDODownload(0x1A00, 1, 0x60640020);
 
 	// velocity 4 byte of TPDO1
 	sendSDODownload(0x1A00, 2, 0x60690020);
-	
+
 	// transmission type "sync"
 	sendSDODownload(0x1800, 2, 1);
-	
+
 	// activate mapped objects
 	sendSDODownload(0x1A00, 0, 2);
 
@@ -685,7 +692,7 @@ void CanDriveWhistle::setPDOmappings()
 
 //-----------------------------------------------
 bool CanDriveWhistle::stop()
-{	
+{
 	positionCommandRad(m_dPosGearMeasRad,0);
 
 	usleep(20000);
@@ -718,7 +725,7 @@ bool CanDriveWhistle::start()
 	//* ------------------- Request status
 	IntprtSetInt(4, 'S', 'R', 0, 0);
 	usleep(20000);
-	
+
 	cnt=0;
 	do
 	{
@@ -783,13 +790,13 @@ bool CanDriveWhistle::startWatchdog(bool bStart)
 		//* note: the COB-ID for a heartbeat message = 0x700 + Device ID
 		const int c_iHeartbeatTimeMS = 15000;
 		const int c_iNMTNodeID = 0x00;
-		
+
 		//* consumer (Host) heartbeat time
 		sendSDODownload(0x1016, 1, (c_iNMTNodeID << 16) | c_iHeartbeatTimeMS);
- 		
+
 		//* error behavior after failure: 0=pre-operational, 1=no state change, 2=stopped"
 		sendSDODownload(0x1029, 1, 2);
-		
+
 		//* motor behavior after heartbeat failure: "quick stop"
 		sendSDODownload(0x6007, 0, 3);
 
@@ -800,10 +807,10 @@ bool CanDriveWhistle::startWatchdog(bool bStart)
 		usleep(20000);
 
 		m_bWatchdogActive = true;
- 
+
 	}
 	else
-	{	
+	{
 		//* Motor action after Heartbeat-Error: No Action
 		sendSDODownload(0x6007, 0, 0);
 
@@ -817,7 +824,7 @@ bool CanDriveWhistle::startWatchdog(bool bStart)
 		usleep(20000);
 
 		m_bWatchdogActive = false;
-		
+
 	}
 
 	return true;
@@ -842,8 +849,8 @@ bool CanDriveWhistle::initHoming()
 	 * This Homing function is not used in ExoTer but the code is kept as valuable example for homing procedures using limit switches.
 	 */
 
-	const int c_iPosRef = m_DriveParam.getEncOffset();
-	
+	/*const int c_iPosRef = m_DriveParam.getEncOffset();
+
 	// 1. make sure that, if on elmo controller still a pending homing from a previous startup is running (in case of warm-start without switching of the whole robot), this old sequence is disabled
 	// disarm homing process
 	IntprtSetInt(8, 'H', 'M', 1, 0);
@@ -887,7 +894,7 @@ bool CanDriveWhistle::initHoming()
 
 	// 3. let the motor turn some time to give him the possibility to escape the approximation sensor if accidently in home position already at the beginning of the sequence (done in CanCtrlPltf...)
 
-	return true;	
+	return true;*/
 }
 
 
@@ -899,14 +906,14 @@ bool CanDriveWhistle::execHoming()
 	 * This Homing function is not used in ExoTer but the code is kept as valuable example for homing procedures using limit switches.
 	 */
 
-	int iCnt;
+	/*int iCnt;
 	CanMsg Msg;
 	bool bRet = true;
 
 	// 4. arm the homing process -> as soon as the approximation sensor is reached and the homing event occurs the commands set in 2. take effect
 	// arm homing process
 	IntprtSetInt(8, 'H', 'M', 1, 1);
-		
+
 	// 5. clear the can buffer to get rid of all uneccessary and potentially disturbing commands still floating through the wires
 	do
 	{
@@ -928,10 +935,10 @@ bool CanDriveWhistle::execHoming()
 
 		// 6.b read message from can
 		m_pCanCtrl->receiveMsgRetry(&Msg, 10);
-		
+
 		// 6.c see if received message is answer of request and if so what is the status
 		if( (Msg.getAt(0) == 'H') && (Msg.getAt(1) == 'M') )
-		{	
+		{
 			// status message (homing armed = 1 / disarmed = 0) is encoded in 5th byte
 			if(Msg.getAt(4) == 0)
 			{
@@ -948,7 +955,7 @@ bool CanDriveWhistle::execHoming()
 
 	}
 	while((m_bLimSwRight == false) && (iCnt<2000)); // wait some time
-	
+
 	// 7. see why finished (homed or timeout) and log out
 	if(iCnt>=2000)
 	{
@@ -963,7 +970,7 @@ bool CanDriveWhistle::execHoming()
 	IntprtSetInt(8, 'I', 'L', 2, 9);  // cob3-2
     usleep(20000);
 
-	return bRet;
+	return bRet;*/
 }
 
 //-----------------------------------------------
@@ -973,7 +980,50 @@ void CanDriveWhistle::Homing()
 	 * This is the Homing function that is used in ExoTer.
 	 * This simple procedure is possible thanks to the the absolute position initialization by means of the potentiometer.
 	 */
-	positionCommandRad(0, 0.25);
+	 positionCommandRad(0, 0.01);
+	 
+
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::positionHoming()
+{
+	/**
+	 * This is the homing function to recover the last position registered in the flash memory of the controller,
+	 *  to avoid errors of the potentiometer
+	 */
+
+	 IntprtSetCharInd(4, 'U', 'I', 1);
+	 usleep(1000000);
+	 IntprtSetInt(8, 'H', 'M', 2, m_iPosGearSavedEnc);
+	 IntprtSetInt(8, 'H', 'M', 1, 1);
+
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::positionSaving()
+{
+	/**
+	 * This functions saves the last position in the flash memory
+	 */
+
+	 IntprtSetChar(4, 'P', 'X');
+	 usleep(1000000);
+	 IntprtSetInt(8, 'U', 'I', 1, m_iPosGearMeasEnc);
+
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::flashMemorySaving()
+{
+	/**
+	 * This functions saves the last position in the flash memory
+	 */
+
+	 usleep(1000000);
+	 IntprtSetChar(4, 'S', 'V');
+	 usleep(1000000);
+
 }
 
 //-----------------------------------------------
@@ -984,19 +1034,17 @@ void CanDriveWhistle::positionCommandRad(double dPosGearRad, double dVelGearRadS
 
 	if(m_iTypeMotion == MOTIONTYPE_POSCTRL)
 	{
-
 		m_DriveParam.PosVelRadToIncr(dPosGearRad, dVelGearRadS, &iPosEncIncr, &iVelEncIncrPeriod);
-		
 		if(iVelEncIncrPeriod > m_DriveParam.getVelMax())
 		{
 			iVelEncIncrPeriod = (int)m_DriveParam.getVelMax();
 			std::cout << "CanDriveWhistle::positionCommand : Limit velocity to maximum allowed" << std::endl;
 		}
-	
+
 		if(iVelEncIncrPeriod < -m_DriveParam.getVelMax())
 		{
 			iVelEncIncrPeriod = (int)-m_DriveParam.getVelMax();
-			std::cout << "CanDriveWhistle::positionCommand : Limit velocity to maximum allowed" << std::endl;
+			std::cout << "CanDriveWhistle::positionCommand : Limit velocity to minimum allowed" << std::endl;
 		}
 
 		if(iPosEncIncr > m_DriveParam.getPosMax())
@@ -1008,32 +1056,34 @@ void CanDriveWhistle::positionCommandRad(double dPosGearRad, double dVelGearRadS
 		if(iPosEncIncr < m_DriveParam.getPosMin())
 		{
 			iPosEncIncr = (int)m_DriveParam.getPosMin();
-			std::cout << "CanDriveWhistle::positionCommand : Limit position to maximum allowed" << std::endl;
+			std::cout << "CanDriveWhistle::positionCommand : Limit position to minimum allowed" << std::endl;
 		}
 
 		if (iVelEncIncrPeriod==0)
 			iVelEncIncrPeriod=m_DriveParam.getPtpVelDefault();
 
+
 		//* Set max Velocity during PTP Motion
 		IntprtSetInt(8, 'S', 'P', 0, iVelEncIncrPeriod);
 
 		//* Set Position Reference for PTP Motion
-		if (m_DriveParam.getIsSteer() == true)
+		if (m_DriveParam.getIsSteer() == true){
 			//* Use absolute positioning on motors that have absolute position initialization (Steered motors)
 			IntprtSetInt(8, 'P', 'A', 0, iPosEncIncr);
+		}
 		else
 			//* Use relative positioning on motors that don't have absolute position initialization (Driving motors)
 			IntprtSetInt(8, 'P', 'R', 0, iPosEncIncr);
 
 		//* Execute command
 		IntprtSetInt(4, 'B', 'G', 0, 0);
-		
+
 	}
 	else
-	{	
+	{
 		std::cout << "CanDriveWhistle::positionCommand : Position Command is not allowed in NON Position control mode!" << std::endl;
 	}
-	
+
 }
 
 //-----------------------------------------------
@@ -1096,7 +1146,7 @@ void CanDriveWhistle::velocityCommandRadS(double dVelGearRadS)
 	int iVelEncIncrPeriod;
 
         //std::cout<<"velocity in library: "<<dVelGearRadS<<" motor is "<<m_sName<<"\n";
-	
+
 	if(m_iTypeMotion == MOTIONTYPE_VELCTRL)
 	{
 		//* calculate motor velocity from joint velocity
@@ -1279,7 +1329,7 @@ void CanDriveWhistle::requestStatus()
 
 //-----------------------------------------------
 void CanDriveWhistle::requestTorque()
-{	
+{
    	//* send command for requesting motor active current
  	IntprtSetInt(4, 'I', 'Q', 0, 0);
 
@@ -1410,7 +1460,7 @@ bool CanDriveWhistle::evalStatusRegister(int iStatus)
 		{
 			if (m_iMotorState != ST_OPERATION_ENABLED)
 			{
-				//std::cout << "Motor " << m_sName << " operation enabled" << std::endl;
+				std::cout << "Motor " << m_sName << " operation enabled" << std::endl;
 			}
 			m_iNewMotorState = ST_OPERATION_ENABLED;
 		}
@@ -1418,7 +1468,7 @@ bool CanDriveWhistle::evalStatusRegister(int iStatus)
 		{
 			if (m_iMotorState != ST_OPERATION_DISABLED)
 			{
-				//std::cout << "Motor " << m_sName << " operation disabled" << std::endl;
+				std::cout << "Motor " << m_sName << " operation disabled" << std::endl;
 			}
 			m_iNewMotorState = ST_OPERATION_DISABLED;
 		}
@@ -1568,7 +1618,7 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
 	{
 		//* Change to UnitMode = 5 (Single Loop Position Control)
 		IntprtSetInt(8, 'U', 'M', 0, 5);
-			
+
 		//* set Target Radius to X Increments
 		IntprtSetInt(8, 'T', 'R', 1, 15);
 
@@ -1615,10 +1665,10 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
 		std::cout << "Motor " << m_sName << " Unit Mode switched to: TORQUE controlled" << std::endl;
 #endif
 	}
-	
+
 	//usleep(100000);
 	m_iTypeMotion = iType;
-        
+
         if (motor_on)
 	{
                 //* switch Motor back ON (as it was before entering the function)
@@ -1667,13 +1717,43 @@ void CanDriveWhistle::IntprtSetInt(int iDataLen, char cCmdChar1, char cCmdChar2,
 }
 
 //-----------------------------------------------
+void CanDriveWhistle::IntprtSetCharInd(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex)
+{
+	char cIndex[2];
+	CanMsg CMsgTr;
+
+	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
+	CMsgTr.setLength(iDataLen);
+
+	cIndex[0] = iIndex;
+	//* The two MSB must be 0. Cf. DSP 301 Implementation guide p. 39.
+	cIndex[1] = (iIndex >> 8) & 0x3F;
+
+	CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1]);
+	m_pCanCtrl->transmitMsg(CMsgTr);
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::IntprtSetChar(int iDataLen, char cCmdChar1, char cCmdChar2)
+{
+	CanMsg CMsgTr;
+
+	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
+	CMsgTr.setLength(iDataLen);
+
+
+	CMsgTr.set(cCmdChar1, cCmdChar2);
+	m_pCanCtrl->transmitMsg(CMsgTr);
+}
+
+//-----------------------------------------------
 void CanDriveWhistle::IntprtSetFloat(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex, float fData)
 {
 	char cIndex[2];
 	char cFloat[4];
 	CanMsg CMsgTr;
 	char* pTempFloat = NULL;
-	
+
 	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
 	CMsgTr.setLength(iDataLen);
 
@@ -1687,7 +1767,7 @@ void CanDriveWhistle::IntprtSetFloat(int iDataLen, char cCmdChar1, char cCmdChar
 	pTempFloat = (char*)&fData;
 	for( int i=0; i<4; i++ )
 		cFloat[i] = pTempFloat[i];
-	
+
 	CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1], cFloat[0], cFloat[1], cFloat[2], cFloat[3]);
 	m_pCanCtrl->transmitMsg(CMsgTr);
 }
@@ -1737,12 +1817,12 @@ void CanDriveWhistle::sendSDOUpload(int iObjIndex, int iObjSubIndex)
 {
 	CanMsg CMsgTr;
 	const int ciInitUploadReq = 0x40;
-	
+
 	CMsgTr.setLength(8);
 	CMsgTr.setID(m_ParamCanOpen.iRxSDO);
 
 	unsigned char cMsg[8];
-	
+
 	cMsg[0] = ciInitUploadReq;
 	cMsg[1] = iObjIndex;
 	cMsg[2] = iObjIndex >> 8;
@@ -1765,12 +1845,12 @@ void CanDriveWhistle::sendSDODownload(int iObjIndex, int iObjSubIndex, int iData
 	const int ciNrBytesNoData = 0x00;
 	const int ciExpedited = 0x02;
 	const int ciDataSizeInd = 0x01;
-	
+
 	CMsgTr.setLength(8);
 	CMsgTr.setID(m_ParamCanOpen.iRxSDO);
 
 	unsigned char cMsg[8];
-	
+
 	cMsg[0] = ciInitDownloadReq | (ciNrBytesNoData << 2) | ciExpedited | ciDataSizeInd;
 	cMsg[1] = iObjIndex;
 	cMsg[2] = iObjIndex >> 8;
@@ -1805,12 +1885,12 @@ void CanDriveWhistle::sendSDOAbort(int iObjIndex, int iObjSubIndex, unsigned int
 {
 	CanMsg CMsgTr;
 	const int ciAbortTransferReq = 0x04 << 5;
-	
+
 	CMsgTr.setLength(8);
 	CMsgTr.setID(m_ParamCanOpen.iRxSDO);
 
 	unsigned char cMsg[8];
-	
+
 	cMsg[0] = ciAbortTransferReq;
 	cMsg[1] = iObjIndex;
 	cMsg[2] = iObjIndex >> 8;
@@ -1823,6 +1903,3 @@ void CanDriveWhistle::sendSDOAbort(int iObjIndex, int iObjSubIndex, unsigned int
 	CMsgTr.set(cMsg[0], cMsg[1], cMsg[2], cMsg[3], cMsg[4], cMsg[5], cMsg[6], cMsg[7]);
 	m_pCanCtrl->transmitMsg(CMsgTr);
 }
-
-
-

@@ -22,7 +22,7 @@
  *
  * Copyright (c) 2010
  *
- * Fraunhofer Institute for Manufacturing Engineering	
+ * Fraunhofer Institute for Manufacturing Engineering
  * and Automation (IPA)
  *
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -31,9 +31,9 @@
  * ROS stack name: cob_drivers
  * ROS package name: cob_base_drive_chain
  * Description: This is a sample implementation of a can-bus with several nodes. In this case it implements the drive-chain of the Care-O-bot3 mobile base. yet, this can be used as template for using the generic_can and canopen_motor packages to implement arbitrary can-setups.
- *								
+ *
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- *			
+ *
  * Author: Christian Connette, email:christian.connette@ipa.fhg.de
  * Supervised by: Christian Connette, email:christian.connette@ipa.fhg.de
  *
@@ -53,23 +53,23 @@
  *	 * Redistributions in binary form must reproduce the above copyright
  *	   notice, this list of conditions and the following disclaimer in the
  *	   documentation and/or other materials provided with the distribution.
- *	 * Neither the name of the Fraunhofer Institute for Manufacturing 
+ *	 * Neither the name of the Fraunhofer Institute for Manufacturing
  *	   Engineering and Automation (IPA) nor the names of its
  *	   contributors may be used to endorse or promote products derived from
  *	   this software without specific prior written permission.
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License LGPL as 
- * published by the Free Software Foundation, either version 3 of the 
+ * it under the terms of the GNU Lesser General Public License LGPL as
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License LGPL for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public 
- * License LGPL along with this program. 
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License LGPL along with this program.
  * If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************/
@@ -102,7 +102,7 @@ int m_iTimerDiv;											/**< Counter used to select which motors to monitor a
 //-----------------------------------------------
 
 Platform_Driver::Platform_Driver(int num_motors,int num_nodes,int can_dev_type,std::string can_dev_addr, int watchdog)
-{	
+{
 
 	m_iNumMotors = num_motors;
 	m_iNumNodes = num_nodes;
@@ -117,7 +117,7 @@ Platform_Driver::Platform_Driver(int num_motors,int num_nodes,int can_dev_type,s
 	}
 	m_vCanNodeIDs.CanId.resize(num_nodes);
 	m_vCanNodeIDs.Name.resize(num_nodes);
-	m_vCanNodeIDs.Type.resize(num_nodes);	
+	m_vCanNodeIDs.Type.resize(num_nodes);
 	m_vCanNodeIDs.Active.resize(num_nodes);
 	m_bExit=false;
 	m_bWatchdogActive = watchdog;
@@ -190,7 +190,7 @@ Platform_Driver::~Platform_Driver()
 		{
 			delete m_vpMotor[i];
 		}
-	}	
+	}
 }
 
 void Platform_Driver::configureTimer()
@@ -225,7 +225,7 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	 * Motor Parameters setup for each type of motors. Adapt to your specific HW!
 	 * this configuration could (or should) be done through RoCK properties and configuration files.
 	 */
-	
+
 	m_GearMotWheelDrive = wheel_drive;
 	m_GearMotWheelSteer = steer_drive;
 	m_GearMotWheelWalk = walk_drive;
@@ -233,7 +233,6 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	m_GearMotMastPan = pan_drive;
 	m_GearMotMastTilt = tilt_drive;
 	m_vCanNodeIDs = can_params;
-
 	/*
 	/// Motor Parameters for Wheel Drive Motors
 	m_GearMotWheelDrive.iEncIncrPerRevMot=512;
@@ -320,9 +319,9 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	 * Manually build the CAN Node IDs array of structures. Put the data that corresponds to your specific HW!
 	 * This configuration could (or should) be done through RoCK properties and configuration files.
 	 */
-	
-	//int iMotorCounter=0;
-	//int iGroupCounter=0;
+
+	int iMotorCounter=0;
+	int iGroupCounter=0;
 
 	// m_vCanNodeIDs[CANNODE_DRIVE_STEER_MOTOR] = {127, "SINGLE_MOTOR_TEST", WHEEL_STEER}; iMotorCounter++;
 	// create also groups of node to address several drives at the same time. Group ID has to be set at each node in advance
@@ -413,14 +412,11 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	m_vCanNodeIDs[CANNODE_WHEEL_STEER_GROUP] = {32, "WHEEL_STEER_GROUP", WHEEL_STEER}; iGroupCounter++;
 	m_vCanNodeIDs[CANNODE_WHEEL_WALK_GROUP] = {33, "WHEEL_WALK_GROUP", WHEEL_WALK}; iGroupCounter++;
 
-*/
-
-	/*
-	m_vCanNodeIDs[CANNODE_MANIP_JOINT_1] = {30, "MANIP_JOINT_1", MANIP_JOINT}; iMotorCounter++;
-	m_vCanNodeIDs[CANNODE_MANIP_JOINT_2] = {31, "MANIP_JOINT_2", MANIP_JOINT}; iMotorCounter++;
-	m_vCanNodeIDs[CANNODE_MANIP_JOINT_3] = {32, "MANIP_JOINT_3", MANIP_JOINT}; iMotorCounter++;
-	m_vCanNodeIDs[CANNODE_MANIP_JOINT_4] = {33, "MANIP_JOINT_4", MANIP_JOINT}; iMotorCounter++;
-	m_vCanNodeIDs[CANNODE_MANIP_JOINT_5] = {34, "MANIP_JOINT_5", MANIP_JOINT}; iMotorCounter++;
+	m_vCanNodeIDs[CANNODE_MANIP_JOINT_1] = {6, "MANIP_JOINT_1", MANIP_JOINT}; iMotorCounter++;
+	m_vCanNodeIDs[CANNODE_MANIP_JOINT_2] = {2, "MANIP_JOINT_2", MANIP_JOINT}; iMotorCounter++;
+	m_vCanNodeIDs[CANNODE_MANIP_JOINT_3] = {3, "MANIP_JOINT_3", MANIP_JOINT}; iMotorCounter++;
+	m_vCanNodeIDs[CANNODE_MANIP_JOINT_4] = {4, "MANIP_JOINT_4", MANIP_JOINT}; iMotorCounter++;
+	m_vCanNodeIDs[CANNODE_MANIP_JOINT_5] = {5, "MANIP_JOINT_5", MANIP_JOINT}; iMotorCounter++;
 
 	m_vCanNodeIDs[CANNODE_MAST_PTU_PAN] = {35, "MAST_PTU_PAN", MAST_PTU}; iMotorCounter++;
 	m_vCanNodeIDs[CANNODE_MAST_PTU_TILT] = {36, "MAST_PTU_TILT", MAST_PTU}; iMotorCounter++;
@@ -428,7 +424,10 @@ bool Platform_Driver::readConfiguration(GearMotorParamType wheel_drive, GearMoto
 	m_vCanNodeIDs[CANNODE_WHEEL_DRIVE_GROUP] = {41, "WHEEL_DRIVE_GROUP", WHEEL_DRIVE}; iGroupCounter++;
 	m_vCanNodeIDs[CANNODE_WHEEL_STEER_GROUP] = {42, "WHEEL_STEER_GROUP", WHEEL_STEER}; iGroupCounter++;
 	m_vCanNodeIDs[CANNODE_WHEEL_WALK_GROUP] = {43, "WHEEL_WALK_GROUP", WHEEL_WALK}; iGroupCounter++;
+
 	m_vCanNodeIDs[CANNODE_MANIP_JOINT_GROUP] = {44, "MANIP_JOINT_GROUP", MANIP_JOINT}; iGroupCounter++;
+
+
 	m_vCanNodeIDs[CANNODE_MAST_PTU_GROUP] = {36, "MAST_PTU_GROUP", MAST_PTU}; iGroupCounter++;
 	*/
 
@@ -604,7 +603,7 @@ int Platform_Driver::evalCanBuffer()
 		if (bRet == false)
 		{
 			std::cout << "evalCanBuffer(): Received CAN_Message with unknown identifier " << m_CanMsgRec.getID() << std::endl;
-		}		
+		}
 	};
 
 	return 0;
@@ -612,7 +611,7 @@ int Platform_Driver::evalCanBuffer()
 
 //-----------------------------------------------
 bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamType steer_drive, GearMotorParamType walk_drive, GearMotorParamType pan_drive, GearMotorParamType tilt_drive, GearMotorParamType arm_joint, PltfCanParams can_params)
-{	
+{
 	bool bHomingOk=false;
 
 	//* Platform configuration. CAN interface and CAN nodes setup.
@@ -630,14 +629,14 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 		std::cout << "Platform_Driver::initPltf: ERROR while creating the message handler thread. Return code is " << rc << std::endl;
 		return false;
 	}
-	
+
 	for(int i = 0; i < m_iNumMotors; i++)
 	{
 		m_vpMotor[i]->reset();
 	}
-    /* Not necessary in HDPR because there is no AUTOEXEC code in the Whistles that needs time
+    // Not necessary in HDPR because there is no AUTOEXEC code in the Whistles that needs time
 	usleep(10000000); //!Wait for the AUTOEXEC script in the Whistles to finish
-	*/
+
 
 	//* Initialize and start all motors
 	for (int i = 0; i<m_iNumMotors; i++)
@@ -648,7 +647,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 			return false;
 		}
 		usleep(10000);
-	
+
 		if (can_params.Active[i])
 		{
 			if (!m_vpMotor[i]->start())
@@ -678,16 +677,22 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 	for (int i = 0; i<m_iNumNodes; i++)
 	{
 		if (m_vpMotor[i]->getDriveParam()->getIsSteer())
-			((CanDriveWhistle*)m_vpMotor[i])->Homing();
+			if(i>=0&&i<=m_iNumNodes){
+				((CanDriveWhistle*)m_vpMotor[i])->positionHoming();
+				//((CanDriveWhistle*)m_vpMotor[i])->Homing();
+			}
+			else{
+				((CanDriveWhistle*)m_vpMotor[i])->Homing();
+			}
 		else
 			((CanDriveWhistle*)m_vpMotor[i])->setTypeMotionVariable(CanDriveItf::MOTIONTYPE_VELCTRL);
 	}
-
+	//std::cout << "Starting group homing..." << std::endl;
 	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_STEER_GROUP])->Homing();
 	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_WALK_GROUP])->Homing();
 	//((CanDriveWhistle*)m_vpMotor[CANNODE_MANIP_JOINT_GROUP])->Homing();
 	//((CanDriveWhistle*)m_vpMotor[CANNODE_MAST_PTU_GROUP])->Homing();
-	usleep(2000000);
+	usleep(500000);
 
 
 	//* check correct homing achieved
@@ -696,7 +701,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 		bHomingOk=true;
 		for (int i=0; i<m_iNumMotors; i++)
 		{
-			if (m_vCanNodeIDs.Type[i] != WHEEL_DRIVE)
+			if (m_vCanNodeIDs.Type[i] != MANIP_JOINT)
 			{
                 		if (can_params.Active[i]){
                     			bHomingOk &= m_vpMotor[i]->checkTargetReached();
@@ -728,6 +733,13 @@ bool Platform_Driver::shutdownPltf()
 	for(int i = 0; i < m_iNumMotors; i++)
 	{
 		bRet &= m_vpMotor[i]->shutdown();
+	}
+	for(int i = 0; i < m_iNumMotors; i++)
+	{
+		if(i>=0&&i<=m_iNumMotors){
+			((CanDriveWhistle*)m_vpMotor[i])->positionSaving();
+			((CanDriveWhistle*)m_vpMotor[i])->flashMemorySaving();	
+		}
 	}
 	return bRet;
 }
@@ -1117,17 +1129,18 @@ void Platform_Driver::directWheelSteerAngleDeg(int iWheel, double dAngle)
 	nodePositionCommandRad(iWheel,dRad,PTP_VELOCICTY_DEFAULT);
 }
 
+*/
 //-----------------------------------------------
 void Platform_Driver::directManipJointAngleDeg(int iJoint, double dAngle)
 {
-	if (m_DrivingMode!=DIRECT_DRIVE){
+	/*if (m_DrivingMode!=DIRECT_DRIVE){
 		std::cout << "Trying to Direct Drive without being in Direct Drive mode. Exiting without driving..." << std::endl;
 		return;
-	}
+	}*/
 	double dRad = dAngle*PI/180;
 	nodePositionCommandRad(iJoint,dRad,PTP_VELOCICTY_DEFAULT);
 }
-
+/*
 //-----------------------------------------------
 void Platform_Driver::directWheelWalkJointAngleDeg(int iJoint, double dAngle)
 {
@@ -1164,11 +1177,11 @@ void Platform_Driver::directMastTiltAngleDeg(double dAngle)
 
 //-----------------------------------------------
 void Platform_Driver::nodePositionCommandRad(int iCanIdent, double dPosGearRad, double dVelGearRadS)
-{		
+{
 
     if (m_vpMotor[iCanIdent]->getTypeMotionVariable() != CanDriveItf::MOTIONTYPE_POSCTRL)
         m_vpMotor[iCanIdent]->setTypeMotion(CanDriveItf::MOTIONTYPE_POSCTRL);
-	
+
 	m_vpMotor[iCanIdent]->positionCommandRad(dPosGearRad, dVelGearRadS);
 
 }
@@ -1225,7 +1238,7 @@ void Platform_Driver::nodeTorqueCommandNm(int iCanIdent, double dTorqueNm)
 //-----------------------------------------------
 void Platform_Driver::requestNodePosVel(int iCanIdent)
 {
-	
+
 	m_vpMotor[iCanIdent]->requestPosVel();
 
 }
@@ -1268,7 +1281,7 @@ void Platform_Driver::getNodeVelocityRadS(int iCanIdent, double* pdVelocityRadS)
 void Platform_Driver::getNodeStatus(int iCanIdent, int* piStatus, int* piTempCel)
 {
 	m_vpMotor[iCanIdent]->getStatus(piStatus, piTempCel);
-}	
+}
 
 //-----------------------------------------------
 void Platform_Driver::getNodeTorque(int iCanIdent, double* pdTorqueNm)

@@ -265,6 +265,10 @@ public:
 	 */
 	void Homing();
 
+	void positionHoming();
+	void positionSaving();
+	void flashMemorySaving();
+
 	/**
 	 * @return The elapsed time since the last received message.
 	 */
@@ -431,6 +435,10 @@ public:
 	 * @param iData Contains the integer value to be transmitted to the drive (in case of set command, otherwise empty).
 	 */
 	void IntprtSetInt(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex, int iData);
+
+	void IntprtSetChar(int iDataLen, char cCmdChar1, char cCmdChar2);
+	void IntprtSetCharInd(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex);
+	
 
 	/**
 	 * Requests the "active current" to the drive.
@@ -718,6 +726,8 @@ protected:
 	TimeStamp m_SendTime;				/**< Timestamp for the time a message was sent. General Purpose */
 	TimeStamp m_StartTime;				/**< Timestamp for application starting time. General Purpose */
 
+	int m_iPosGearMeasEnc;				/**< Position encoder reading value*/
+	int m_iPosGearSavedEnc;				/**< Position encoder saved value*/
 	double m_dPosGearMeasRad;			/**< Position reading value */
 	double m_dPosGearMemoRad;			/**< Previously stored position reading value */
 	double m_dVelGearMeasRadS;			/**< Velocity reading value */
