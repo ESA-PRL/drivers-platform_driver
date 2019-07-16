@@ -674,25 +674,15 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 	 * Home all non driving motors. Using group IDs for efficiency.
 	 */
 
-	for (int i = 0; i<m_iNumNodes; i++)
-	{
-		if (m_vpMotor[i]->getDriveParam()->getIsSteer())
-			if(i>=0&&i<=m_iNumNodes){
-				((CanDriveWhistle*)m_vpMotor[i])->positionHoming();
-				//((CanDriveWhistle*)m_vpMotor[i])->Homing();
+    for (int i = 0; i < m_iNumMotors; i++)
+    {
+        if (m_vpMotor[i]->getDriveParam()->getIsSteer())
+			{
+				if (m_vCanNodeIDs.Type[i] == MANIP_JOINT) ((CanDriveWhistle*)m_vpMotor[i])->positionHoming();
+				else ((CanDriveWhistle*)m_vpMotor[i])->Homing();
 			}
-			else{
-				((CanDriveWhistle*)m_vpMotor[i])->Homing();
-			}
-		else
-			((CanDriveWhistle*)m_vpMotor[i])->setTypeMotionVariable(CanDriveItf::MOTIONTYPE_VELCTRL);
-	}
-	//std::cout << "Starting group homing..." << std::endl;
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_STEER_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_WHEEL_WALK_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_MANIP_JOINT_GROUP])->Homing();
-	//((CanDriveWhistle*)m_vpMotor[CANNODE_MAST_PTU_GROUP])->Homing();
-	usleep(500000);
+    }
+	usleep(5000000);
 
 
 	//* check correct homing achieved
@@ -701,7 +691,7 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive, GearMotorParamTyp
 		bHomingOk=true;
 		for (int i=0; i<m_iNumMotors; i++)
 		{
-			if (m_vCanNodeIDs.Type[i] != MANIP_JOINT)
+			if (m_vpMotor[i]->getDriveParam()->getIsSteer() && m_vCanNodeIDs.Type[i] != MANIP_JOINT)
 			{
                 		if (can_params.Active[i]){
                     			bHomingOk &= m_vpMotor[i]->checkTargetReached();
@@ -728,20 +718,19 @@ bool Platform_Driver::isPltfError()
 //-----------------------------------------------
 bool Platform_Driver::shutdownPltf()
 {
-	bool bRet=true;
-	//* shut down all motors
-	for(int i = 0; i < m_iNumMotors; i++)
-	{
-		bRet &= m_vpMotor[i]->shutdown();
-	}
-	for(int i = 0; i < m_iNumMotors; i++)
-	{
-		if(i>=0&&i<=m_iNumMotors){
-			((CanDriveWhistle*)m_vpMotor[i])->positionSaving();
-			((CanDriveWhistle*)m_vpMotor[i])->flashMemorySaving();	
-		}
-	}
-	return bRet;
+	bool bRet = true;
+    //* shut down all motors
+    for (int i = 0; i < m_iNumMotors; i++)
+    {
+        bRet &= m_vpMotor[i]->shutdown();
+		if (m_vCanNodeIDs.Type[i] == MANIP_JOINT)
+			{
+				((CanDriveWhistle*)m_vpMotor[i])->positionSaving();
+				((CanDriveWhistle*)m_vpMotor[i])->flashMemorySaving();	
+			}
+		
+    }
+    return bRet;
 }
 
 //-----------------------------------------------
