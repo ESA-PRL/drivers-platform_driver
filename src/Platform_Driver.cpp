@@ -1118,18 +1118,18 @@ void Platform_Driver::directWheelSteerAngleDeg(int iWheel, double dAngle)
 	nodePositionCommandRad(iWheel,dRad,PTP_VELOCICTY_DEFAULT);
 }
 
-*/
+
 //-----------------------------------------------
 void Platform_Driver::directManipJointAngleDeg(int iJoint, double dAngle)
 {
-	/*if (m_DrivingMode!=DIRECT_DRIVE){
+	if (m_DrivingMode!=DIRECT_DRIVE){
 		std::cout << "Trying to Direct Drive without being in Direct Drive mode. Exiting without driving..." << std::endl;
 		return;
-	}*/
+	}
 	double dRad = dAngle*PI/180;
 	nodePositionCommandRad(iJoint,dRad,PTP_VELOCICTY_DEFAULT);
 }
-/*
+
 //-----------------------------------------------
 void Platform_Driver::directWheelWalkJointAngleDeg(int iJoint, double dAngle)
 {

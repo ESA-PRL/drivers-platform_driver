@@ -989,14 +989,17 @@ void CanDriveWhistle::Homing()
 void CanDriveWhistle::positionHoming()
 {
 	/**
-	 * This is the homing function to recover the last position registered in the flash memory of the controller,
-	 *  to avoid errors of the potentiometer
+	 * This is the homing function that is used in MA5-E to recover 
+	 * the last position registered in the flash memory of the controller,
+	 * to avoid errors of the potentiometer
 	 */
 
-	 IntprtSetCharInd(4, 'U', 'I', 1);
-	 usleep(1000000);
-	 IntprtSetInt(8, 'H', 'M', 2, m_iPosGearSavedEnc);
-	 IntprtSetInt(8, 'H', 'M', 1, 1);
+	IntprtSetCharInd(4, 'U', 'I', 1);
+	usleep(20000);
+	IntprtSetInt(8, 'H', 'M', 2, m_iPosGearSavedEnc);
+	usleep(20000);
+	IntprtSetInt(8, 'H', 'M', 1, 1);
+	usleep(20000);
 
 }
 
@@ -1004,12 +1007,13 @@ void CanDriveWhistle::positionHoming()
 void CanDriveWhistle::positionSaving()
 {
 	/**
-	 * This functions saves the last position in the flash memory
+	 * This functions saves the last position in the controller
 	 */
 
-	 IntprtSetChar(4, 'P', 'X');
-	 usleep(1000000);
-	 IntprtSetInt(8, 'U', 'I', 1, m_iPosGearMeasEnc);
+	IntprtSetChar(4, 'P', 'X');
+	usleep(20000);
+	IntprtSetInt(8, 'U', 'I', 1, m_iPosGearMeasEnc);
+	usleep(20000);
 
 }
 
@@ -1017,12 +1021,18 @@ void CanDriveWhistle::positionSaving()
 void CanDriveWhistle::flashMemorySaving()
 {
 	/**
-	 * This functions saves the last position in the flash memory
+	 * This functions saves the controller state in the flash memory
+	 * Motor must be disabled 
 	 */
-
-	 usleep(1000000);
-	 IntprtSetChar(4, 'S', 'V');
-	 usleep(1000000);
+	if (m_bMotorOn)
+    {
+        LOG_ERROR_S << "Flash memory saving failed, motor was enabled "<< std::endl;
+    }
+	else
+	{
+		IntprtSetChar(4, 'S', 'V');
+		usleep(20000);
+	}
 
 }
 

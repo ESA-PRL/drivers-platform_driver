@@ -94,11 +94,11 @@
 //#include <GenericRoverManoeuvre.h>
 
 //* definitions --------------------------------------------------
-#define NUM_MOTORS 5							/**< Number of motors in the platform, equal to the number of nodes in the CAN bus*/
-#define NUM_GROUPS 1							/**< Number of node Groups configured in the CAN bus */
-#define NUM_NODES 6							/**< Size of the vector containing all addressable nodes in the platform */
+//#define NUM_MOTORS 5							/**< Number of motors in the platform, equal to the number of nodes in the CAN bus*/
+//#define NUM_GROUPS 1							/**< Number of node Groups configured in the CAN bus */
+//#define NUM_NODES 6							/**< Size of the vector containing all addressable nodes in the platform */
 //#define NUM_WHEELS 6							/**< Number of Wheels in the platform */
-#define PTP_VELOCICTY_DEFAULT 0.25				/**< Default velocity used in PTP motions (max velocity of trapezoidal profile) */
+//#define PTP_VELOCICTY_DEFAULT 0.25				/**< Default velocity used in PTP motions (max velocity of trapezoidal profile) */
 //#define WHEEL_RADIUS_MM 70						/**< Radius of Wheels in milimeters */
 //#define PLTF_LENGTH 0.530							/**< Length of the platform measured from the center of a front wheel to the center of a back wheel */
 //#define PLTF_WIDTH 0.610							/**< Width of the platform measured from the center of a left wheel to the center of a right wheel */
@@ -528,7 +528,7 @@ public:
 	 */
 	//void directWheelDriveVelocityDegS(int iWheel, double dVelocity);
 	//void directWheelSteerAngleDeg(int iWheel, double dAngle);
-	void directManipJointAngleDeg(int iJoint, double dAngle);
+	//void directManipJointAngleDeg(int iJoint, double dAngle);
 	//void directWheelWalkJointAngleDeg(int iJoint, double dAngle);
 	//void directMastPanAngleDeg(double dAngle);
 	//void directMastTiltAngleDeg(double dAngle);
