@@ -682,7 +682,10 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive,
     for (int i = 0; i < m_iNumMotors; i++)
     {
         if (m_vpMotor[i]->getDriveParam()->getIsSteer())
-            ((CanDriveWhistle*)m_vpMotor[i])->homing();
+			{
+				if (m_vCanNodeIDs.Type[i] == MANIP_JOINT) ((CanDriveWhistle*)m_vpMotor[i])->positionHoming();
+				else ((CanDriveWhistle*)m_vpMotor[i])->homing();
+			}
     }
 
     usleep(5000000);
@@ -693,12 +696,12 @@ bool Platform_Driver::initPltf(GearMotorParamType wheel_drive,
         bHomingOk=true;
         for (int i=0; i<m_iNumMotors; i++)
         {
-            if (m_vpMotor[i]->getDriveParam()->getIsSteer())
-            {
-                if (can_params.Active[i]){
-                    bHomingOk &= m_vpMotor[i]->checkTargetReached();
-                }
-            }
+			if (m_vpMotor[i]->getDriveParam()->getIsSteer() && m_vCanNodeIDs.Type[i] != MANIP_JOINT)
+			{
+                		if (can_params.Active[i]){
+                    			bHomingOk &= m_vpMotor[i]->checkTargetReached();
+                		}
+			}
         }
     }
 
@@ -727,11 +730,16 @@ bool Platform_Driver::isPltfError()
 
 bool Platform_Driver::shutdownPltf()
 {
-    bool bRet=true;
+	bool bRet = true;
     //* shut down all motors
-    for(int i = 0; i < m_iNumMotors; i++)
+    for (int i = 0; i < m_iNumMotors; i++)
     {
         bRet &= m_vpMotor[i]->shutdown();
+		if (m_vCanNodeIDs.Type[i] == MANIP_JOINT)
+			{
+				((CanDriveWhistle*)m_vpMotor[i])->positionSaving();
+				((CanDriveWhistle*)m_vpMotor[i])->flashMemorySaving();	
+			}
     }
     return bRet;
 }

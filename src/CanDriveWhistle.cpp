@@ -360,9 +360,16 @@ void CanDriveWhistle::evalMsgTxPDO2(CanMsg msg)
                     << " Returns Error Code: " << msg.getAt(4) << " ";
         requestStatus();
     }
-    else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'X') ) //* current pos
-    {
-    }
+	else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'X') ) //* current pos
+	{
+		
+		m_iPosGearMeasEnc = msg.getAt(4)+(msg.getAt(5)<< 8)+(msg.getAt(6)<< 16)+(msg.getAt(7)<< 24);
+
+	}
+	else if( (msg.getAt(0) == 'U') && (msg.getAt(1) == 'I') ) //* saved pos
+	{
+		m_iPosGearSavedEnc = msg.getAt(4)+(msg.getAt(5)<< 8)+(msg.getAt(6)<< 16)+(msg.getAt(7)<< 24);
+	}
     else if( (msg.getAt(0) == 'P') && (msg.getAt(1) == 'A') ) //* position absolute
     {
     }
@@ -860,7 +867,6 @@ bool CanDriveWhistle::initHoming()
 
 bool CanDriveWhistle::execHoming()
 {
-
     /**
      * This Homing function is not used in ExoTer but the code is kept as valuable example for homing procedures using limit switches.
      */
@@ -934,7 +940,58 @@ bool CanDriveWhistle::execHoming()
 
 void CanDriveWhistle::homing()
 {
-    positionCommandRad(0, 0.25);
+	/**
+	 * This is the Homing function that is used in ExoTer.
+	 * This simple procedure is possible thanks to the the absolute position initialization by means of the potentiometer.
+	 */
+	 positionCommandRad(0, 0.25);
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::positionHoming()
+{
+	/**
+	 * This is the homing function that is used in MA5-E to recover 
+	 * the last position registered in the flash memory of the controller,
+	 * to avoid errors of the potentiometer
+	 */
+
+	IntprtSetCharInd(4, 'U', 'I', 1);
+	usleep(20000);
+	IntprtSetInt(8, 'H', 'M', 2, m_iPosGearSavedEnc);
+	usleep(20000);
+	IntprtSetInt(8, 'H', 'M', 1, 1);
+	usleep(20000);
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::positionSaving()
+{
+	/**
+	 * This functions saves the last position in the controller
+	 */
+
+	IntprtSetChar(4, 'P', 'X');
+	usleep(20000);
+	IntprtSetInt(8, 'U', 'I', 1, m_iPosGearMeasEnc);
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::flashMemorySaving()
+{
+	/**
+	 * This functions saves the controller state in the flash memory
+	 * Motor must be disabled 
+	 */
+	if (m_bMotorOn)
+    {
+        std::cout << "Flash memory saving failed, motor was enabled "<< std::endl;
+    }
+	else
+	{
+		IntprtSetChar(4, 'S', 'V');
+		usleep(20000);
+	}
 }
 
 void CanDriveWhistle::positionCommandRad(double dPosGearRad, double dVelGearRadS)
@@ -993,7 +1050,6 @@ void CanDriveWhistle::positionCommandRad(double dPosGearRad, double dVelGearRadS
     {
         LOG_ERROR_S << "CanDriveWhistle::positionCommand : Position Command is not allowed in NON Position control mode!";
     }
-
 }
 
 void CanDriveWhistle::positionSetPointRad(double dPosGearRad, double dVelGearRadS)
@@ -1491,7 +1547,7 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
 {
     int iMaxAcc = int(m_DriveParam.getMaxAcc());
     int iMaxDcc = int(m_DriveParam.getMaxDec());
-        bool motor_on=false;
+    bool motor_on=false;
 
     if (m_bMotorOn)
     {
@@ -1569,9 +1625,9 @@ bool CanDriveWhistle::setTypeMotion(MotionType iType)
     usleep(100000);
     //m_iTypeMotion = iType;
 
-        if (motor_on)
+    if (motor_on)
     {
-                //* switch Motor back ON (as it was before entering the function)
+        //* switch Motor back ON (as it was before entering the function)
         IntprtSetInt(8, 'M', 'O', 0, 1);
 
         int cnt=0;
@@ -1623,29 +1679,60 @@ void CanDriveWhistle::IntprtSetInt(int iDataLen, char cCmdChar1, char cCmdChar2,
     //}
 }
 
+//-----------------------------------------------
+void CanDriveWhistle::IntprtSetCharInd(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex)
+{
+	char cIndex[2];
+	CanMsg CMsgTr;
+
+	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
+	CMsgTr.setLength(iDataLen);
+
+	cIndex[0] = iIndex;
+	//* The two MSB must be 0. Cf. DSP 301 Implementation guide p. 39.
+	cIndex[1] = (iIndex >> 8) & 0x3F;
+
+	CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1]);
+	m_pCanCtrl->transmitMsg(CMsgTr);
+}
+
+//-----------------------------------------------
+void CanDriveWhistle::IntprtSetChar(int iDataLen, char cCmdChar1, char cCmdChar2)
+{
+	CanMsg CMsgTr;
+
+	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
+	CMsgTr.setLength(iDataLen);
+
+
+	CMsgTr.set(cCmdChar1, cCmdChar2);
+	m_pCanCtrl->transmitMsg(CMsgTr);
+}
+
+//-----------------------------------------------
 void CanDriveWhistle::IntprtSetFloat(int iDataLen, char cCmdChar1, char cCmdChar2, int iIndex, float fData)
 {
-    char cIndex[2];
-    char cFloat[4];
-    CanMsg CMsgTr;
-    char* pTempFloat = NULL;
+	char cIndex[2];
+	char cFloat[4];
+	CanMsg CMsgTr;
+	char* pTempFloat = NULL;
 
-    CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
-    CMsgTr.setLength(iDataLen);
+	CMsgTr.setID(m_ParamCanOpen.iRxPDO2);
+	CMsgTr.setLength(iDataLen);
 
-    cIndex[0] = iIndex;
-    //* Sending float values requires bit 6 to be zero and bit 7 one (Elmo Implementation guide)
-    //* setting bit 6 to zero with mask 0b10111111->0xBF
-    cIndex[1] = (iIndex >> 8) & 0xBF;
-    //* setting bit 7 to one with mask 0b10000000 ->0x80
-    cIndex[1] = cIndex[1] | 0x80;
+	cIndex[0] = iIndex;
+	//* Sending float values requires bit 6 to be zero and bit 7 one (Elmo Implementation guide)
+	//* setting bit 6 to zero with mask 0b10111111->0xBF
+	cIndex[1] = (iIndex >> 8) & 0xBF;
+	//* setting bit 7 to one with mask 0b10000000 ->0x80
+	cIndex[1] = cIndex[1] | 0x80;
 
-    pTempFloat = (char*)&fData;
-    for( int i=0; i<4; i++ )
-        cFloat[i] = pTempFloat[i];
+	pTempFloat = (char*)&fData;
+	for( int i=0; i<4; i++ )
+		cFloat[i] = pTempFloat[i];
 
-    CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1], cFloat[0], cFloat[1], cFloat[2], cFloat[3]);
-    m_pCanCtrl->transmitMsg(CMsgTr);
+	CMsgTr.set(cCmdChar1, cCmdChar2, cIndex[0], cIndex[1], cFloat[0], cFloat[1], cFloat[2], cFloat[3]);
+	m_pCanCtrl->transmitMsg(CMsgTr);
 }
 
 bool CanDriveWhistle::checkTargetReached()
