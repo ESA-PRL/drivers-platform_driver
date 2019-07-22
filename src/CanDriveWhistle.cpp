@@ -985,7 +985,7 @@ void CanDriveWhistle::flashMemorySaving()
 	 */
 	if (m_bMotorOn)
     {
-        std::cout << "Flash memory saving failed, motor was enabled "<< std::endl;
+        LOG_ERROR_S << "Flash memory saving failed, motor was enabled";
     }
 	else
 	{
